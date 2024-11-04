@@ -1,0 +1,49 @@
+# Laravel specific
+/vendor
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/.env
+Homestead.yaml
+Homestead.json
+.phpunit.result.cache
+.env.local
+.env.*.local
+
+# IDE specific
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+
+# Operating system specific
+.DS_Store
+Thumbs.db
+.idea/
+
+# Log files
+/logs
+/storage/logs/*.log
+
+# Cache files
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/views
+
+# Compiled files
+/public/css
+/public/js
+/public/mix-manifest.json
+/public/manifest.json
+/public/vendor
+
+# Test files
+/tests/Browser/Actions
+/tests/Browser/Pages
+/tests/Browser/ExampleTest.php
+
+# Backup files
+*.bak
+*.swp
+*~
