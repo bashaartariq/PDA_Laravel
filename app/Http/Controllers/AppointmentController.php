@@ -100,6 +100,7 @@ class AppointmentController extends Controller
             return response()->json(['message' => "Appointment Not Found"], 404);
         }
     }
+    
     function updateAppointment(Request $request,$appointmentId)
     {
         try{
@@ -115,6 +116,19 @@ class AppointmentController extends Controller
             "Duration"=>$request->input('duration'),
             "Description"=>$request->input('description')
         ];
+        $startTime = $updateData['appointment_time'];
+        $endTime = date('H:i', strtotime($startTime) + ($updateData['Duration'] * 60));
+        $existingAppointment = appointment::where('doctor_id', $updateData['doctor_id'])
+            ->where('date', $updateData['date'])
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('appointment_time', [$startTime, $endTime])
+                    ->orWhereBetween(DB::raw('DATE_ADD(appointment_time, INTERVAL Duration MINUTE)'), [$startTime, $endTime]);
+            })
+            ->first();
+        if ($existingAppointment) {
+            Log::info("This doctor already has an appointment at this date and time");
+            return response()->json(['message' => 'This doctor already has an appointment at this date and time.'], 400);
+        }
         Log::info($updateData);
         appointment::where('id',$appointmentId)->update($updateData);
         return response()->json(['message'=>"Successfully updated the Appointment"],200);

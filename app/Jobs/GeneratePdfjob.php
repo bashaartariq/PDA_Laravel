@@ -22,11 +22,8 @@ class GeneratePdfjob implements ShouldQueue
      */
     public function __construct($data)
     {
-        //
         $this->data = $data;
-
     }
-
     /**
      * Execute the job.
      *

@@ -1,17 +1,12 @@
 <?php
-
 namespace App\Http\Controllers;
-
-use App\Models\appointment;
 use App\Models\Cases;
 use App\Models\Doctor;
-use App\Models\Patient;
 use App\Models\user;
 use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use PhpParser\Comment\Doc;
 use App\Jobs\GeneratePdfjob;
 
 class Admin extends Controller
@@ -170,7 +165,21 @@ class Admin extends Controller
                 'deleted_at' => $case->deleted_at,
             ];
         });
-    return response()->json($case);
-} catch (Exception $e) {
-    return response()->json(['message' => "Case Not Found."], 404);
-}}}
+        return response()->json($case);}
+        catch (Exception $e) {return response()->json(['message' => "Case Not Found."], 404);}}
+
+        function deleteDoctor(Request $request,$id)
+    {
+        Log::info($id);
+        $doctor = Doctor::with('appointment')->find($id);
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor not found.'], 404);
+        }
+        if ($doctor->appointment()->count() > 0) {
+            $doctor->appointment()->delete();
+        }
+        $doctor->delete();
+        return response()->json(['message' => 'Doctor and associated appointments deleted successfully.']);
+    }
+
+}
