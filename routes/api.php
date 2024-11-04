@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware('checkApiKey')->group(function () {
 Route::get('/getstates', [PatientController::class, 'getStates']);
 Route::get('/getcities/{stateId}', [PatientController::class, 'getCity']);
 Route::post('/addPatientInfo', [PatientController::class, 'addPatientInfo']);
@@ -46,14 +48,13 @@ Route::get('/getAppointmentsForDoctor/{DoctorId}', [DoctorController::class, 'ge
 Route::put('/updateCase/{caseId}', [CaseController::class, 'updateCase']);
 Route::put('/updateAppointment/{appointmentId}', [AppointmentController::class, 'updateAppointment']);
 Route::get('/getAppointmentCase/{appointmentId}', [DoctorController::class, 'getAppointmentCase']);
-Route::get('/getRoles', [roles::class, 'getRoles']);
-Route::get('/Gender', [Gender::class, 'getGender']);
 Route::get('/doctorAndPatientCount', [Admin::class, 'getDoctorPatientCount']);
 Route::get('/PatientAllInfo', [PatientController::class, 'getAllPatients']);
 Route::delete('/Patient/{patientIds}', [Admin::class, 'deletePatient']);
-
-
 Route::get('/allDoctors', [Admin::class, 'allDoctors']);
 Route::get('/Case/{patientId}',[Admin::class,'getCases']);
 Route::get('/DoctorAppointments/{DoctorId}', [Admin::class, 'getAppointmentForDoctor']);
 Route::post('/PDF', [Admin::class, 'getPDF']);
+Route::get('/getRoles', [roles::class, 'getRoles']);
+Route::get('/Gender', [Gender::class, 'getGender']);
+});
