@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\GeneratePdfjob;
+use App\Models\appointment;
 
 class Admin extends Controller
 {
@@ -136,11 +137,13 @@ class Admin extends Controller
         $user = $doctor->user;
         $doctorName = $user['firstName'].' '.$user['middleName'].' '.$user['lastName'];
         Log::info($doctorName);
-        $data = 
-        ['startDate'=>$startDate,'endDate'=>$endDate,'DoctorId'=>$DoctorId,'caseData'=>$caseCounts,'doctorName'=>$doctorName];
+        $appointment = appointment::where('doctor_id',$DoctorId)->get();
+        Log::info($appointment);
+        $data = ['startDate'=>$startDate,'endDate'=>$endDate,'DoctorId'=>$DoctorId,'caseData'=>$caseCounts,'doctorName'=>$doctorName,'appointments'=>$appointment];
         GeneratePdfjob::dispatch($data);
-
-        return response()->json($caseCounts);
+        return response()->json([
+            'message'=>"Successfully Created the PDF."
+        ]);
     }
 
     function getCases(Request $request,$patientId)
@@ -182,4 +185,17 @@ class Admin extends Controller
         return response()->json(['message' => 'Doctor and associated appointments deleted successfully.']);
     }
 
+
+
+
+
+    function generatePdf(Request $request,$DoctorId)
+    {
+        $pdfFileName = 'case_report_doctor_' . $DoctorId . '.pdf';
+        $files = glob(storage_path('app/public/' . $pdfFileName));
+        if (count($files) === 0) {
+            return response()->json(['message' => 'PDF not found.'], 404);
+        }
+        return response()->download($files[0]);
+    }
 }

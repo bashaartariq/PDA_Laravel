@@ -29,10 +29,10 @@ class GeneratePdfjob implements ShouldQueue
      *
      * @return void
      */
-    public function handle()
-    {
+    public function handle(){  
         Log::info($this->data);
+        $doctorId = $this->data['DoctorId'];
+        $pdfFileName = 'case_report_doctor_' . $doctorId . '.pdf';
         $pdf = FacadePdf::loadView('pdf.case_report', $this->data);
-        $pdf->save(storage_path('app/public/case_report.pdf'));
-    }
-}
+        $pdf->save(storage_path('app/public/' . $pdfFileName));
+    }}

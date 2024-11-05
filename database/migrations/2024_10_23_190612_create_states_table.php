@@ -14,9 +14,9 @@ class CreateStatesTable extends Migration
     public function up()
     {
         Schema::create('states', function (Blueprint $table) {
-            $table->id(); // Primary key
-            $table->string('name'); // State name
-            $table->timestamps(); // created_at and updated_at
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
         });
     }
 

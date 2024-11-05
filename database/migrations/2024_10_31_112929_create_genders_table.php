@@ -30,4 +30,5 @@ class CreateGendersTable extends Migration
     {
         Schema::dropIfExists('genders');
     }
+    
 }

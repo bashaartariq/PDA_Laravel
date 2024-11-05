@@ -6,35 +6,80 @@
     <title>Case Report</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 20px;
+            background-color: #f9f9f9;
+            color: #444;
         }
-        h1, h2 {
+
+        h1 {
+            color: #0056b3;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
             color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
         }
+
+        p {
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 5px 0;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+
         table, th, td {
             border: 1px solid #ddd;
         }
+
         th, td {
-            padding: 8px;
+            padding: 12px;
             text-align: left;
+            font-size: 14px;
         }
+
         th {
+            background-color: #0056b3;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
             background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e2e6ea;
+        }
+
+        .summary {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
     <h1>Case Report</h1>
     
-    <p><strong>Report Period:</strong> {{ $startDate }} to {{ $endDate }}</p>
-    <p><strong>Doctor ID:</strong> {{ $DoctorId }}</p>
-    <p><strong>Doctor Name:</strong> {{ $doctorName }}</p>
+    <div class="summary">
+        <p><strong>Report Period:</strong> {{ $startDate }} to {{ $endDate }}</p>
+        <p><strong>Doctor ID:</strong> {{ $DoctorId }}</p>
+        <p><strong>Doctor Name:</strong> {{ $doctorName }}</p>
+    </div>
 
     <h2>Case Data</h2>
     <table>
@@ -49,6 +94,29 @@
                 <tr>
                     <td>{{ $case->case_type }}</td>
                     <td>{{ $case->count }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <h2>Appointment Details</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Appointment Date</th>
+                <th>Appointment Time</th>
+                <th>Description</th>
+                <th>Duration (minutes)</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            @foreach ($appointments as $appointment)
+                <tr>
+                    <td>{{ $appointment->date }}</td>
+                    <td>{{ $appointment->appointment_time }}</td>
+                    <td>{{ $appointment->Description }}</td>
+                    <td>{{ $appointment->Duration }}</td>
                 </tr>
             @endforeach
         </tbody>

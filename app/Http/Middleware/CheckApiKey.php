@@ -14,7 +14,7 @@ class CheckApiKey
     public function handle(Request $request, Closure $next)
     {
         $authHeader = $request->header('Authorization');
-        if (!$authHeader || $authHeader !== "Bearer KEY") {
+        if (!$authHeader || $authHeader !== "Bearer 4eb43523-630b-4b21-be3b-ce73a1ee43da") {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
         return $next($request);
