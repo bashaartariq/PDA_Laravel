@@ -99,27 +99,5 @@
         </tbody>
     </table>
 
-    <h2>Appointment Details</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Appointment Date</th>
-                <th>Appointment Time</th>
-                <th>Description</th>
-                <th>Duration (minutes)</th>
-            </tr>
-        </thead>
-        
-        <tbody>
-            @foreach ($appointments as $appointment)
-                <tr>
-                    <td>{{ $appointment->date }}</td>
-                    <td>{{ $appointment->appointment_time }}</td>
-                    <td>{{ $appointment->Description }}</td>
-                    <td>{{ $appointment->Duration }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
 </body>
 </html>

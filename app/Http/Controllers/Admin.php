@@ -160,9 +160,7 @@ class Admin extends Controller
         Log::info($doctor);
         return response()->json($doctor);
     }
-
-    function getPDF(Request $request)
-    {
+    function getPDF(Request $request){
         Log::info("WOrking");
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
@@ -182,9 +180,7 @@ class Admin extends Controller
         $user = $doctor->user;
         $doctorName = $user['firstName'].' '.$user['middleName'].' '.$user['lastName'];
         Log::info($doctorName);
-        $appointment = appointment::where('doctor_id',$DoctorId)->get();
-        Log::info($appointment);
-        $data = ['startDate'=>$startDate,'endDate'=>$endDate,'DoctorId'=>$DoctorId,'caseData'=>$caseCounts,'doctorName'=>$doctorName,'appointments'=>$appointment];
+        $data = ['startDate'=>$startDate,'endDate'=>$endDate,'DoctorId'=>$DoctorId,'caseData'=>$caseCounts,'doctorName'=>$doctorName];
         GeneratePdfjob::dispatch($data);
         return response()->json([
             'message'=>"Successfully Created the PDF."
@@ -305,6 +301,16 @@ class Admin extends Controller
                 ];
             });
         return response()->json($case);
-    }   
-
+    }
+    function searchAppointment(Request $request,$type,$term,$caseId)
+    {
+        Log::info("Search type: " . $type);
+        Log::info("Search term: " . $term);
+        Log::info("Patient ID: " . $caseId);
+        $appointments = appointment::where('case_id')->with('speciality','practiceLocation','appointmentType');
+        if (!empty($type) && !empty($term))
+        {
+            Log::info($appointments);
+        }
+    }
 }

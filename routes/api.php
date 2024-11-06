@@ -61,9 +61,7 @@ Route::get('/getRoles', [roles::class, 'getRoles']);
 Route::get('/Gender', [Gender::class, 'getGender']);
 Route::post('/PDF', [Admin::class, 'getPDF']);
 Route::get('/SearchCases/{type}/{term}/{patientId}',[Admin::class,'searchCases']);
+Route::get('/SearchAppointment/{type}/{term}/{caseId}',[Admin::class,'searchAppointment']);
 });
 
-
-
 Route::get('/generate-pdf/{DoctorId}',[Admin::class,'generatePdf']);
-
