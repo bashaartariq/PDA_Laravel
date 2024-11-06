@@ -55,8 +55,15 @@ Route::get('/allDoctors', [Admin::class, 'allDoctors']);
 Route::get('/Case/{patientId}',[Admin::class,'getCases']);
 Route::get('/DoctorAppointments/{DoctorId}', [Admin::class, 'getAppointmentForDoctor']);
 Route::delete("/doctor/{id}",[Admin::class,'deleteDoctor']);
+Route::delete('/Case/{CaseIds}',[Admin::class,'deleteCases']);
+Route::delete('Appointment/{appointmentIds}',[Admin::class,'deleteAppointment']);
 Route::get('/getRoles', [roles::class, 'getRoles']);
 Route::get('/Gender', [Gender::class, 'getGender']);
-Route::post('/PDF', [Admin::class, 'getPDF']);});
+Route::post('/PDF', [Admin::class, 'getPDF']);
+Route::get('/SearchCases/{type}/{term}/{patientId}',[Admin::class,'searchCases']);
+});
+
+
 
 Route::get('/generate-pdf/{DoctorId}',[Admin::class,'generatePdf']);
+

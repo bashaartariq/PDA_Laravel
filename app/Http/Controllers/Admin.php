@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\GeneratePdfjob;
 use App\Models\appointment;
+use Psy\Readline\Hoa\Console;
 
 class Admin extends Controller
 {
@@ -59,6 +60,51 @@ class Admin extends Controller
             Log::error($e);
             return response()->json(['message' => 'Error deleting patients.'], 500);
         }
+    }
+
+    function deleteCases(Request $request,$CaseIds)
+    {
+        try {
+        $array = explode(",", $CaseIds);
+        $arrayOfInts = array_map('intval', $array);
+        Log::info('Case IDs to delete: ', $arrayOfInts);
+        DB::transaction(function () use ($arrayOfInts) {
+            foreach ($arrayOfInts as $caseId) {
+                $case = Cases::find($caseId);
+                if ($case) {
+                    $case->appointment()->delete();
+                    $case->delete();
+                } else {
+                    Log::warning("Case with ID {$caseId} not found.");
+                }
+            }
+        });
+        return response()->json(['message' => 'Cases and associated appointments soft deleted successfully.']);
+    }
+    catch (Exception $e) {
+            Log::error($e);
+            return response()->json(['message' => 'Error Deleting Cases and its Appointment.'], 500);
+        }
+    }
+
+    function deleteAppointment(Request $request,$appointmentIds)
+    {
+        Log::info("Working");
+        try {
+            $array = explode(",", $appointmentIds);
+            $arrayOfInts = array_map('intval', $array);
+            Log::info('Appointment IDs to delete: ', $arrayOfInts);
+            foreach ($arrayOfInts as $appointmentId) {
+                $appointment = appointment::find($appointmentId);
+                $appointment->delete();
+            }
+            return response()->json(['message' => 'appointments soft deleted successfully.']);
+        }
+    
+        catch (Exception $e) {
+                Log::error($e);
+                return response()->json(['message' => 'Error deleting Appointment.'], 500);
+            }
     }
 
     function allDoctors(Request $request)
@@ -185,10 +231,6 @@ class Admin extends Controller
         return response()->json(['message' => 'Doctor and associated appointments deleted successfully.']);
     }
 
-
-
-
-
     function generatePdf(Request $request,$DoctorId)
     {
         $pdfFileName = 'case_report_doctor_' . $DoctorId . '.pdf';
@@ -198,4 +240,45 @@ class Admin extends Controller
         }
         return response()->download($files[0]);
     }
+    
+    function searchCases(Request $request, $type, $term, $patientId)
+    {
+        Log::info("Search type: " . $type);
+        Log::info("Search term: " . $term);
+        Log::info("Patient ID: " . $patientId);
+        
+        $caseQuery = Cases::where('PID', $patientId)
+            ->with(['insurance', 'firm', 'practiceLocation']);
+        
+            if (!empty($type) && !empty($term)) {
+            $caseQuery = $caseQuery->where(function($query) use ($type, $term) {
+                $validColumns = ['category', 'purpose_of_visit', 'case_type', 'DOA', 'insurance_name', 'firm_name', 'practice_location_name'];
+                if (in_array($type, $validColumns)) {
+                    $query->where($type, 'like', '%' . $term . '%');
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            });
+        }
+
+        $case = $caseQuery->get()
+            ->map(function ($case) {
+                return [
+                    'category' => $case->category,
+                    'purpose_of_visit' => $case->purpose_of_visit,
+                    'case_type' => $case->case_type,
+                    'DOA' => $case->DOA,
+                    'id' => $case->id,
+                    'insurance_name' => $case->insurance->name,
+                    'firm_name' => $case->firm->name,
+                    'practice_location_name' => $case->practiceLocation->name,
+                    'patient_id' => $case->PID,
+                    'created_at' => $case->created_at,
+                    'updated_at' => $case->updated_at,
+                    'deleted_at' => $case->deleted_at,
+                ];
+            });
+       return response()->json($case);
+    }
+
 }
