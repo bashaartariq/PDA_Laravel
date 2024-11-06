@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\GeneratePdfjob;
 use App\Models\appointment;
-use Psy\Readline\Hoa\Console;
 
 class Admin extends Controller
 {
@@ -246,21 +245,48 @@ class Admin extends Controller
         Log::info("Search type: " . $type);
         Log::info("Search term: " . $term);
         Log::info("Patient ID: " . $patientId);
-        
         $caseQuery = Cases::where('PID', $patientId)
             ->with(['insurance', 'firm', 'practiceLocation']);
-        
-            if (!empty($type) && !empty($term)) {
+        if (!empty($type) && !empty($term)) {
             $caseQuery = $caseQuery->where(function($query) use ($type, $term) {
-                $validColumns = ['category', 'purpose_of_visit', 'case_type', 'DOA', 'insurance_name', 'firm_name', 'practice_location_name'];
+                $validColumns = [
+                    'category', 
+                    'purpose_of_visit', 
+                    'case_type', 
+                    'DOA', 
+                    'insurance_name', 
+                    'firm_name', 
+                    'practice_location_name'
+                ];
                 if (in_array($type, $validColumns)) {
-                    $query->where($type, 'like', '%' . $term . '%');
+                    switch ($type) {
+                        case 'insurance_name':
+                            $query->whereHas('insurance', function ($q) use ($term) {
+                                $q->where('name', 'like', '%' . $term . '%');
+                            });
+                            break;
+    
+                        case 'firm_name':
+                            $query->whereHas('firm', function ($q) use ($term) {
+                                $q->where('name', 'like', '%' . $term . '%');
+                            });
+                            break;
+    
+                        case 'practice_location_name':
+                            $query->whereHas('practiceLocation', function ($q) use ($term) {
+                                $q->where('name', 'like', '%' . $term . '%');
+                            });
+                            break;
+    
+                        default:
+                            $query->where($type, 'like', '%' . $term . '%');
+                            break;
+                    }
                 } else {
-                    $query->whereRaw('1 = 0');
+                    Log::info("NOT FOUND");
                 }
             });
         }
-
         $case = $caseQuery->get()
             ->map(function ($case) {
                 return [
@@ -269,16 +295,16 @@ class Admin extends Controller
                     'case_type' => $case->case_type,
                     'DOA' => $case->DOA,
                     'id' => $case->id,
-                    'insurance_name' => $case->insurance->name,
-                    'firm_name' => $case->firm->name,
-                    'practice_location_name' => $case->practiceLocation->name,
+                    'insurance_name' => $case->insurance->name ?? null,
+                    'firm_name' => $case->firm->name ?? null,
+                    'practice_location_name' => $case->practiceLocation->name ?? null,
                     'patient_id' => $case->PID,
                     'created_at' => $case->created_at,
                     'updated_at' => $case->updated_at,
                     'deleted_at' => $case->deleted_at,
                 ];
             });
-       return response()->json($case);
-    }
+        return response()->json($case);
+    }   
 
 }

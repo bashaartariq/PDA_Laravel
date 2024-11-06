@@ -23,7 +23,8 @@ class AppointmentController extends Controller
             $caseId = $appointmentData['case_id'];
             $case = Cases::findOrFail($caseId);
             $startTime = $appointmentData['time'];
-            $endTime = date('H:i', strtotime($startTime) + ($appointmentData['duration'] * 60));
+            $endTime = date('H:i', strtotime($startTime) + ($appointmentData['duration']));
+            Log::info($endTime);
             $existingAppointment = appointment::where('doctor_id', $appointmentData['doctor'])
                 ->where('date', $appointmentData['date'])
                 ->where(function ($query) use ($startTime, $endTime) {
@@ -117,7 +118,7 @@ class AppointmentController extends Controller
             "Description"=>$request->input('description')
         ];
         $startTime = $updateData['appointment_time'];
-        $endTime = date('H:i', strtotime($startTime) + ($updateData['Duration'] * 60));
+        $endTime = date('H:i', strtotime($startTime) + ($updateData['Duration']));
         $existingAppointment = appointment::where('doctor_id', $updateData['doctor_id'])
             ->where('date', $updateData['date'])
             ->where(function ($query) use ($startTime, $endTime) {
