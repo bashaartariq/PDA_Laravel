@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Appointment_types;
 use App\Http\Controllers\AppointmentController;

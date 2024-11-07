@@ -36,7 +36,6 @@ class AppointmentController extends Controller
                 Log::info("This doctor already has an appointment at this date and time");
                 return response()->json(['message' => 'This doctor already has an appointment at this date and time.'], 400);
             }
-
             $appointment = $case->appointment()->create([
                 'case_id' => $caseId,
                 'doctor_id' => $appointmentData['doctor'],
@@ -48,7 +47,6 @@ class AppointmentController extends Controller
                 'Duration' => $appointmentData['duration'],
                 'Description' => $appointmentData['description'],
             ]);
-
             Log::info($appointment);
             return response()->json(['message' => "Successfully Created An Appointment"], 201);
         } catch (QueryException $e) {
