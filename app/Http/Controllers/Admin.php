@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Cases;
 use App\Models\Doctor;
 use App\Models\user;
@@ -59,31 +61,30 @@ class Admin extends Controller
             return response()->json(['message' => 'Error deleting patients.'], 500);
         }
     }
-    function deleteCases(Request $request,$CaseIds)
+    function deleteCases(Request $request, $CaseIds)
     {
         try {
-        $array = explode(",", $CaseIds);
-        $arrayOfInts = array_map('intval', $array);
-        Log::info('Case IDs to delete: ', $arrayOfInts);
-        DB::transaction(function () use ($arrayOfInts) {
-            foreach ($arrayOfInts as $caseId) {
-                $case = Cases::find($caseId);
-                if ($case) {
-                    $case->appointment()->delete();
-                    $case->delete();
-                } else {
-                    Log::warning("Case with ID {$caseId} not found.");
+            $array = explode(",", $CaseIds);
+            $arrayOfInts = array_map('intval', $array);
+            Log::info('Case IDs to delete: ', $arrayOfInts);
+            DB::transaction(function () use ($arrayOfInts) {
+                foreach ($arrayOfInts as $caseId) {
+                    $case = Cases::find($caseId);
+                    if ($case) {
+                        $case->appointment()->delete();
+                        $case->delete();
+                    } else {
+                        Log::warning("Case with ID {$caseId} not found.");
+                    }
                 }
-            }
-        });
-        return response()->json(['message' => 'Cases and associated appointments soft deleted successfully.']);
-    }
-    catch (Exception $e) {
+            });
+            return response()->json(['message' => 'Cases and associated appointments soft deleted successfully.']);
+        } catch (Exception $e) {
             Log::error($e);
             return response()->json(['message' => 'Error Deleting Cases and its Appointment.'], 500);
         }
     }
-    function deleteAppointment(Request $request,$appointmentIds)
+    function deleteAppointment(Request $request, $appointmentIds)
     {
         Log::info("Working");
         try {
@@ -95,11 +96,10 @@ class Admin extends Controller
                 $appointment->delete();
             }
             return response()->json(['message' => 'appointments soft deleted successfully.']);
+        } catch (Exception $e) {
+            Log::error($e);
+            return response()->json(['message' => 'Error deleting Appointment.'], 500);
         }
-        catch (Exception $e) {
-                Log::error($e);
-                return response()->json(['message' => 'Error deleting Appointment.'], 500);
-            }
     }
     function allDoctors(Request $request)
     {
@@ -152,7 +152,8 @@ class Admin extends Controller
         Log::info($doctor);
         return response()->json($doctor);
     }
-    function getPDF(Request $request){
+    function getPDF(Request $request)
+    {
         Log::info("WOrking");
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
@@ -168,41 +169,44 @@ class Admin extends Controller
             ->groupBy('cases.case_type')
             ->get();
         Log::info($caseCounts);
-        $doctor = Doctor::where('id',$DoctorId)->first();
+        $doctor = Doctor::where('id', $DoctorId)->first();
         $user = $doctor->user;
-        $doctorName = $user['firstName'].' '.$user['middleName'].' '.$user['lastName'];
+        $doctorName = $user['firstName'] . ' ' . $user['middleName'] . ' ' . $user['lastName'];
         Log::info($doctorName);
-        $data = ['startDate'=>$startDate,'endDate'=>$endDate,'DoctorId'=>$DoctorId,'caseData'=>$caseCounts,'doctorName'=>$doctorName];
+        $data = ['startDate' => $startDate, 'endDate' => $endDate, 'DoctorId' => $DoctorId, 'caseData' => $caseCounts, 'doctorName' => $doctorName];
         GeneratePdfjob::dispatch($data);
         return response()->json([
-            'message'=>"Successfully Created the PDF."
+            'message' => "Successfully Created the PDF."
         ]);
     }
-    function getCases(Request $request,$patientId)
+    function getCases(Request $request, $patientId)
     {
-        try{
-        $case = Cases::where('PID', $patientId)
-        ->with(['insurance', 'firm', 'practiceLocation'])
-        ->get()
-        ->map(function ($case) {
-            return [
-                'category' => $case->category,
-                'purpose_of_visit' => $case->purpose_of_visit,
-                'case_type' => $case->case_type,
-                'DOA' => $case->DOA,
-                'id' => $case->id,
-                'insurance_name' => $case->insurance->name,
-                'firm_name' => $case->firm->name,
-                'practice_location_name' => $case->practiceLocation->name,
-                'patient_id' => $case->PID,
-                'created_at' => $case->created_at,
-                'updated_at' => $case->updated_at,
-                'deleted_at' => $case->deleted_at,
-            ];
-        });
-        return response()->json($case);}
-        catch (Exception $e) {return response()->json(['message' => "Case Not Found."], 404);}}
-        function deleteDoctor(Request $request,$id)
+        try {
+            $case = Cases::where('PID', $patientId)
+                ->with(['insurance', 'firm', 'practiceLocation'])
+                ->get()
+                ->map(function ($case) {
+                    return [
+                        'category' => $case->category,
+                        'purpose_of_visit' => $case->purpose_of_visit,
+                        'case_type' => $case->case_type,
+                        'DOA' => $case->DOA,
+                        'id' => $case->id,
+                        'insurance_name' => $case->insurance->name,
+                        'firm_name' => $case->firm->name,
+                        'practice_location_name' => $case->practiceLocation->name,
+                        'patient_id' => $case->PID,
+                        'created_at' => $case->created_at,
+                        'updated_at' => $case->updated_at,
+                        'deleted_at' => $case->deleted_at,
+                    ];
+                });
+            return response()->json($case);
+        } catch (Exception $e) {
+            return response()->json(['message' => "Case Not Found."], 404);
+        }
+    }
+    function deleteDoctor(Request $request, $id)
     {
         Log::info($id);
         $doctor = Doctor::with('appointment')->find($id);
@@ -215,7 +219,7 @@ class Admin extends Controller
         $doctor->delete();
         return response()->json(['message' => 'Doctor and associated appointments deleted successfully.']);
     }
-    function generatePdf(Request $request,$DoctorId)
+    function generatePdf(Request $request, $DoctorId)
     {
         $pdfFileName = 'case_report_doctor_' . $DoctorId . '.pdf';
         $files = glob(storage_path('app/public/' . $pdfFileName));
@@ -223,80 +227,5 @@ class Admin extends Controller
             return response()->json(['message' => 'PDF not found.'], 404);
         }
         return response()->download($files[0]);
-    }
-    function searchCases(Request $request, $type, $term, $patientId)
-    {
-        Log::info("Search type: " . $type);
-        Log::info("Search term: " . $term);
-        Log::info("Patient ID: " . $patientId);
-        $caseQuery = Cases::where('PID', $patientId)
-            ->with(['insurance', 'firm', 'practiceLocation']);
-        if (!empty($type) && !empty($term)) {
-            $caseQuery = $caseQuery->where(function($query) use ($type, $term) {
-                $validColumns = [
-                    'category', 
-                    'purpose_of_visit', 
-                    'case_type', 
-                    'DOA', 
-                    'insurance_name', 
-                    'firm_name', 
-                    'practice_location_name'
-                ];
-                if (in_array($type, $validColumns)) {
-                    switch ($type) {
-                        case 'insurance_name':
-                            $query->whereHas('insurance', function ($q) use ($term) {
-                                $q->where('name', 'like', '%' . $term . '%');
-                            });
-                            break;
-                        case 'firm_name':
-                            $query->whereHas('firm', function ($q) use ($term) {
-                                $q->where('name', 'like', '%' . $term . '%');
-                            });
-                            break;
-                        case 'practice_location_name':
-                            $query->whereHas('practiceLocation', function ($q) use ($term) {
-                                $q->where('name', 'like', '%' . $term . '%');
-                            });
-                            break;
-                        default:
-                            $query->where($type, 'like', '%' . $term . '%');
-                            break;
-                    }
-                } else {
-                    Log::info("NOT FOUND");
-                    return response()->json(['message'=>'Not Found.']);
-                }
-            });
-        }
-        $case = $caseQuery->get()
-            ->map(function ($case) {
-                return [
-                    'category' => $case->category,
-                    'purpose_of_visit' => $case->purpose_of_visit,
-                    'case_type' => $case->case_type,
-                    'DOA' => $case->DOA,
-                    'id' => $case->id,
-                    'insurance_name' => $case->insurance->name ?? null,
-                    'firm_name' => $case->firm->name ?? null,
-                    'practice_location_name' => $case->practiceLocation->name ?? null,
-                    'patient_id' => $case->PID,
-                    'created_at' => $case->created_at,
-                    'updated_at' => $case->updated_at,
-                    'deleted_at' => $case->deleted_at,
-                ];
-            });
-        return response()->json($case);
-    }
-    function searchAppointment(Request $request,$type,$term,$caseId)
-    {
-        Log::info("Search type: " . $type);
-        Log::info("Search term: " . $term);
-        Log::info("Patient ID: " . $caseId);
-        // $appointments = appointment::where('case_id')->with('speciality','practiceLocation','appointmentType');
-        // if (!empty($type) && !empty($term))
-        // {
-        //     Log::info($appointments);
-        // }
     }
 }

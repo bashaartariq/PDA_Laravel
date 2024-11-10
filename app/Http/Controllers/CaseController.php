@@ -12,6 +12,7 @@ use App\Models\Insurance;
 use App\Models\user;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class CaseController extends Controller
 {
@@ -134,5 +135,92 @@ class CaseController extends Controller
         } catch (Exception $e) {
             return response()->json(['message' => 'Cannot update the form. Try Again '], 500);
         }
+    }
+    function searchCases(Request $request, $type, $term, $patientId)
+    {
+        Log::info("Search type: " . $type);
+        Log::info("Search term: " . $term);
+        Log::info("Patient ID: " . $patientId);
+        if (!!$type && !!$term) {
+            if ($type == 'id' || $type == 'category' || $type == 'purpose_of_visit' || $type == 'case_type' || $type == 'DOA') {
+                $cases = DB::table('cases')
+                    ->join('insurances', 'cases.insurance_id', '=', 'insurances.id')
+                    ->join('firms', 'cases.firm_id', '=', 'firms.id')
+                    ->join('practice_locations', 'cases.practice_location_id', '=', 'practice_locations.id')
+                    ->where('cases.PID', $patientId)
+                    ->where('cases.' . $type, 'Like', '%' . $term . '%')
+                    ->select(
+                        'cases.category as category',
+                        'cases.purpose_of_visit as purpose_of_visit',
+                        'cases.case_type as case_type',
+                        'cases.DOA as DOA',
+                        'cases.id as id',
+                        'insurances.name as insurance_name',
+                        'firms.name as firm_name',
+                        'practice_locations.name as practice_location_name',
+                        'cases.PID as patient_id'
+                    )
+                    ->get();
+            } else if ($type == 'insurance_name') {
+                $cases = DB::table('cases')
+                    ->join('insurances', 'cases.insurance_id', '=', 'insurances.id')
+                    ->join('firms', 'cases.firm_id', '=', 'firms.id')
+                    ->join('practice_locations', 'cases.practice_location_id', '=', 'practice_locations.id')
+                    ->where('cases.PID', $patientId)
+                    ->where('insurances.name', 'Like', '%' . $term . '%')
+                    ->select(
+                        'cases.category as category',
+                        'cases.purpose_of_visit as purpose_of_visit',
+                        'cases.case_type as case_type',
+                        'cases.DOA as DOA',
+                        'cases.id as id',
+                        'insurances.name as insurance_name',
+                        'firms.name as firm_name',
+                        'practice_locations.name as practice_location_name',
+                        'cases.PID as patient_id'
+                    )
+                    ->get();
+            } else if ($type == 'firm_name') {
+                $cases = DB::table('cases')
+                    ->join('insurances', 'cases.insurance_id', '=', 'insurances.id')
+                    ->join('firms', 'cases.firm_id', '=', 'firms.id')
+                    ->join('practice_locations', 'cases.practice_location_id', '=', 'practice_locations.id')
+                    ->where('cases.PID', $patientId)
+                    ->where('firms.name', 'Like', '%' . $term . '%')
+                    ->select(
+                        'cases.category as category',
+                        'cases.purpose_of_visit as purpose_of_visit',
+                        'cases.case_type as case_type',
+                        'cases.DOA as DOA',
+                        'cases.id as id',
+                        'insurances.name as insurance_name',
+                        'firms.name as firm_name',
+                        'practice_locations.name as practice_location_name',
+                        'cases.PID as patient_id'
+                    )
+                    ->get();
+            } else if ($type == 'practice_location') {
+                $cases = DB::table('cases')
+                    ->join('insurances', 'cases.insurance_id', '=', 'insurances.id')
+                    ->join('firms', 'cases.firm_id', '=', 'firms.id')
+                    ->join('practice_locations', 'cases.practice_location_id', '=', 'practice_locations.id')
+                    ->where('cases.PID', $patientId)
+                    ->where('practice_locations.name', 'Like', '%' . $term . '%')
+                    ->select(
+                        'cases.category as category',
+                        'cases.purpose_of_visit as purpose_of_visit',
+                        'cases.case_type as case_type',
+                        'cases.DOA as DOA',
+                        'cases.id as id',
+                        'insurances.name as insurance_name',
+                        'firms.name as firm_name',
+                        'practice_locations.name as practice_location_name',
+                        'cases.PID as patient_id'
+                    )
+                    ->get();
+            }
+        }
+        Log::info($cases);
+        return response()->json($cases);
     }
 }
